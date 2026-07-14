@@ -69,7 +69,7 @@ function connectTikTok() {
     });
 
   tiktokConnection.on('chat', (data) => {
-    console.log('[debug-chat]', JSON.stringify(data).slice(0, 500)); // pagaidu logs, lai redzētu īsto struktūru
+    console.log('[debug-chat] keys=', Object.keys(data), '| user=', JSON.stringify(data.user), '| comment=', data.comment, '| content=', data.content);
     broadcast({
       type: 'chat',
       user: data.user?.nickname || data.user?.uniqueId || data.nickname || data.uniqueId || 'Nezināms',
@@ -78,7 +78,7 @@ function connectTikTok() {
   });
 
   tiktokConnection.on('gift', (data) => {
-    console.log('[debug-gift]', JSON.stringify(data).slice(0, 500)); // pagaidu logs
+    console.log('[debug-gift] keys=', Object.keys(data), '| user=', JSON.stringify(data.user), '| giftDetails=', JSON.stringify(data.giftDetails), '| describe=', data.common?.describe);
     if (data.repeatEnd === false) return; // vēl turpinās virkne, gaidām beigas
     broadcast({
       type: 'gift',
