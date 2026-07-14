@@ -55,7 +55,7 @@ let reconnectTimer = null;
 function connectTikTok() {
   clearTimeout(reconnectTimer);
 
- tiktokConnection = new TikTokLiveConnection(TIKTOK_USERNAME);
+ tiktokConnection = new TikTokLiveConnection(TIKTOK_USERNAME, {});
 
   tiktokConnection.connect()
     .then((state) => {
