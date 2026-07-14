@@ -100,15 +100,25 @@ function connectTikTok() {
       currentTotalLikes = data.totalLikeCount;
     }
   });
-  const likeInterval = setInterval(() => {
+
+  const seenViewers = new Set();
+  tiktokConnection.on('member', (data) => {
+    const id = data.user?.uniqueId || data.user?.userId;
+    if (id) seenViewers.add(id);
+  });
+
+  const statsInterval = setInterval(() => {
     if (currentTotalLikes > 0 && currentTotalLikes !== lastSentLikeCount) {
       lastSentLikeCount = currentTotalLikes;
       broadcast({ type: 'likes', total: currentTotalLikes });
     }
+    if (seenViewers.size > 0) {
+      broadcast({ type: 'viewers', total: seenViewers.size });
+    }
   }, 10000);
 
-  tiktokConnection.on('disconnected', () => clearInterval(likeInterval));
-  tiktokConnection.on('streamEnd', () => clearInterval(likeInterval));
+  tiktokConnection.on('disconnected', () => clearInterval(statsInterval));
+  tiktokConnection.on('streamEnd', () => clearInterval(statsInterval));
 
   tiktokConnection.on('streamEnd', () => {
     console.log('[tiktok] Straume beigusies, mēģinās savienoties vēlreiz vēlāk.');
