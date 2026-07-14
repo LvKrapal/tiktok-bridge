@@ -69,20 +69,21 @@ function connectTikTok() {
     });
 
   tiktokConnection.on('chat', (data) => {
+    console.log('[debug-chat]', JSON.stringify(data).slice(0, 500)); // pagaidu logs, lai redzētu īsto struktūru
     broadcast({
       type: 'chat',
-      user: data.user?.nickname || data.user?.uniqueId || 'Nezināms',
-      text: data.comment || '',
+      user: data.user?.nickname || data.user?.uniqueId || data.nickname || data.uniqueId || 'Nezināms',
+      text: data.comment || data.content || data.text || data.message || '',
     });
   });
 
   tiktokConnection.on('gift', (data) => {
-    // Rāda tikai pabeigtas dāvanu virknes (izvairās no atkārtotiem starp-notikumiem)
+    console.log('[debug-gift]', JSON.stringify(data).slice(0, 500)); // pagaidu logs
     if (data.repeatEnd === false) return; // vēl turpinās virkne, gaidām beigas
     broadcast({
       type: 'gift',
-      user: data.user?.nickname || data.user?.uniqueId || 'Nezināms',
-      giftName: data.giftDetails?.giftName || data.giftName || 'dāvana',
+      user: data.user?.nickname || data.user?.uniqueId || data.nickname || data.uniqueId || 'Nezināms',
+      giftName: data.giftDetails?.giftName || data.giftDetails?.name || data.giftName || data.gift?.name || 'dāvana',
     });
   });
 
