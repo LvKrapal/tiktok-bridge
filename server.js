@@ -103,6 +103,7 @@ function connectTikTok() {
 
   const seenViewers = new Set();
   tiktokConnection.on('member', (data) => {
+    console.log('[debug-member] keys=', Object.keys(data), '| user=', JSON.stringify(data.user)?.slice(0, 300));
     const id = data.user?.uniqueId || data.user?.userId;
     if (id) seenViewers.add(id);
   });
