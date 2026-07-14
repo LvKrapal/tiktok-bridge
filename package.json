@@ -1,0 +1,17 @@
+{
+  "name": "lvfrenzy-tiktok-bridge",
+  "version": "1.0.0",
+  "description": "Neliels tilts, kas savienojas ar TikTok Live čatu un pārsūta ziņas uz WebSocket klientiem (MultiChat lapai).",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "tiktok-live-connector": "^2.0.5",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
