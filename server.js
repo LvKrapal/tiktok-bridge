@@ -12,7 +12,7 @@
  * Ievieto TIKTOK_USERNAME bez @ zīmes, piem. "lvfrenzy".
  */
 
-const { WebcastPushConnection } = require('tiktok-live-connector');
+const { TikTokLiveConnection } = require('tiktok-live-connector');
 const { WebSocketServer } = require('ws');
 
 const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || '';
@@ -55,7 +55,7 @@ let reconnectTimer = null;
 function connectTikTok() {
   clearTimeout(reconnectTimer);
 
-  tiktokConnection = new WebcastPushConnection(TIKTOK_USERNAME);
+ tiktokConnection = new TikTokLiveConnection(TIKTOK_USERNAME);
 
   tiktokConnection.connect()
     .then((state) => {
