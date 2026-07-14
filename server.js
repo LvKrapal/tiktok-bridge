@@ -55,7 +55,7 @@ let reconnectTimer = null;
 function connectTikTok() {
   clearTimeout(reconnectTimer);
 
- tiktokConnection = new TikTokLiveConnection(TIKTOK_USERNAME, {});
+  tiktokConnection = new TikTokLiveConnection(TIKTOK_USERNAME, {});
 
   tiktokConnection.connect()
     .then((state) => {
@@ -71,20 +71,19 @@ function connectTikTok() {
   tiktokConnection.on('chat', (data) => {
     broadcast({
       type: 'chat',
-      user: data.nickname || data.uniqueId || 'Nezināms',
+      user: data.user?.nickname || data.user?.uniqueId || 'Nezināms',
       text: data.comment || '',
     });
   });
 
   tiktokConnection.on('gift', (data) => {
     // Rāda tikai pabeigtas dāvanu virknes (izvairās no atkārtotiem starp-notikumiem)
-    if (data.giftType !== 1 || data.repeatEnd) {
-      broadcast({
-        type: 'gift',
-        user: data.nickname || data.uniqueId || 'Nezināms',
-        giftName: data.giftName || '',
-      });
-    }
+    if (data.repeatEnd === false) return; // vēl turpinās virkne, gaidām beigas
+    broadcast({
+      type: 'gift',
+      user: data.user?.nickname || data.user?.uniqueId || 'Nezināms',
+      giftName: data.giftDetails?.giftName || data.giftName || 'dāvana',
+    });
   });
 
   tiktokConnection.on('streamEnd', () => {
