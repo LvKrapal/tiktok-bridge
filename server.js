@@ -24,7 +24,6 @@ if (!TIKTOK_USERNAME) {
   process.exit(1);
 }
 
-// ---------- WebSocket serveris klientiem (multichat lapai) ----------
 const wss = new WebSocketServer({ port: PORT });
 console.log(`[bridge] WebSocket serveris klausās uz porta ${PORT}`);
 
@@ -48,7 +47,6 @@ function broadcast(payload) {
   }
 }
 
-// ---------- TikTok Live savienojums ----------
 let tiktokConnection = null;
 let reconnectTimer = null;
 
@@ -69,23 +67,48 @@ function connectTikTok() {
     });
 
   tiktokConnection.on('chat', (data) => {
-    console.log('[debug-chat] keys=', Object.keys(data), '| user=', JSON.stringify(data.user), '| comment=', data.comment, '| content=', data.content);
     broadcast({
       type: 'chat',
-      user: data.user?.nickname || data.user?.uniqueId || data.nickname || data.uniqueId || 'Nezināms',
-      text: data.comment || data.content || data.text || data.message || '',
+      user: data.user?.nickname || data.user?.uniqueId || 'Nezināms',
+      text: data.content || data.comment || '',
     });
   });
 
   tiktokConnection.on('gift', (data) => {
-    console.log('[debug-gift] keys=', Object.keys(data), '| user=', JSON.stringify(data.user), '| giftDetails=', JSON.stringify(data.giftDetails), '| describe=', data.common?.describe);
-    if (data.repeatEnd === false) return; // vēl turpinās virkne, gaidām beigas
+    const describe = data.common?.describe || '';
+    if (!describe) return;
     broadcast({
       type: 'gift',
-      user: data.user?.nickname || data.user?.uniqueId || data.nickname || data.uniqueId || 'Nezināms',
-      giftName: data.giftDetails?.giftName || data.giftDetails?.name || data.giftName || data.gift?.name || 'dāvana',
+      user: data.user?.nickname || data.user?.uniqueId || 'Nezināms',
+      giftName: describe,
     });
   });
+
+  tiktokConnection.on('social', (data) => {
+    const describe = data.common?.describe || '';
+    broadcast({
+      type: 'social',
+      user: data.user?.nickname || data.user?.uniqueId || 'Nezināms',
+      text: describe || 'sociālā darbība',
+    });
+  });
+
+  let lastSentLikeCount = 0;
+  let currentTotalLikes = 0;
+  tiktokConnection.on('like', (data) => {
+    if (typeof data.totalLikeCount === 'number') {
+      currentTotalLikes = data.totalLikeCount;
+    }
+  });
+  const likeInterval = setInterval(() => {
+    if (currentTotalLikes > 0 && currentTotalLikes !== lastSentLikeCount) {
+      lastSentLikeCount = currentTotalLikes;
+      broadcast({ type: 'likes', total: currentTotalLikes });
+    }
+  }, 10000);
+
+  tiktokConnection.on('disconnected', () => clearInterval(likeInterval));
+  tiktokConnection.on('streamEnd', () => clearInterval(likeInterval));
 
   tiktokConnection.on('streamEnd', () => {
     console.log('[tiktok] Straume beigusies, mēģinās savienoties vēlreiz vēlāk.');
